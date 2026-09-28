@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Build and deploy Portfolio Service
 
 on:
   push:
@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 25
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
+          java-version: '17'
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
@@ -35,19 +35,60 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: larinhazzz/portifolio-ci:${{ github.sha }}
+          tags: |
+            larinhazzz/portifolio-ci:${{ github.sha }}
+            larinhazzz/portifolio-ci:latest
 
-      - name: executing remote ssh commands using password
+      - name: Deploy Portfolio Service
         uses: appleboy/ssh-action@master
+        env:
+          IMAGE_TAG: larinhazzz/portifolio-ci:${{ github.sha }}
+          POSTGRES_DB: portfolio
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
         with:
           host: ${{ secrets.HOST_TEST }}
           username: "ubuntu"
           key: ${{ secrets.KEY_TEST }}
           port: 22
+          envs: IMAGE_TAG,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD
           script: |
-            docker stop portifolio
-            docker rm --force portifolio
-            docker run  -d -p 8082:8080 --name portifolio larinhazzz/portifolio-ci:${{ github.sha }}
+            docker network inspect portfolio-network >/dev/null 2>&1 || docker network create portfolio-network
+            docker volume inspect portfolio-postgres-data >/dev/null 2>&1 || docker volume create portfolio-postgres-data
 
+            if ! docker container inspect portfolio-postgres >/dev/null 2>&1; then
+              docker run -d \
+                --name portfolio-postgres \
+                --restart unless-stopped \
+                --network portfolio-network \
+                -e POSTGRES_DB="$POSTGRES_DB" \
+                -e POSTGRES_USER="$POSTGRES_USER" \
+                -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+                -v portfolio-postgres-data:/var/lib/postgresql/data \
+                postgres:16-alpine
+            else
+              docker start portfolio-postgres >/dev/null 2>&1 || true
+            fi
 
+            for attempt in $(seq 1 30); do
+              if docker exec portfolio-postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+                break
+              fi
+              if [ "$attempt" -eq 30 ]; then
+                echo "PostgreSQL did not become ready"
+                exit 1
+              fi
+              sleep 2
+            done
 
+            docker pull "$IMAGE_TAG"
+            docker rm --force portifolio >/dev/null 2>&1 || true
+            docker run -d \
+              --name portifolio \
+              --restart unless-stopped \
+              --network portfolio-network \
+              -p 8082:8080 \
+              -e DATABASE_URL="jdbc:postgresql://portfolio-postgres:5432/$POSTGRES_DB" \
+              -e DATABASE_USERNAME="$POSTGRES_USER" \
+              -e DATABASE_PASSWORD="$POSTGRES_PASSWORD" \
+              "$IMAGE_TAG"
