@@ -45,7 +45,7 @@ jobs:
           IMAGE_TAG: larinhazzz/portifolio-ci:${{ github.sha }}
           POSTGRES_DB: portfolio
           POSTGRES_USER: portfolio
-          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          POSTGRES_PASSWORD: portfolio
         with:
           host: ${{ secrets.HOST_TEST }}
           username: "ubuntu"

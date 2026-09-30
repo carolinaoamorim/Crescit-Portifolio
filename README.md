@@ -52,10 +52,9 @@ Configure estes secrets no repositório do GitHub antes do primeiro deploy:
 
 - `DOCKERHUB_TOKEN`: token da conta Docker Hub usada pelo workflow;
 - `HOST_TEST`: endereço IP ou domínio do servidor;
-- `KEY_TEST`: chave SSH privada do usuário `ubuntu`;
-- `DATABASE_PASSWORD`: senha do PostgreSQL exclusivo do serviço de Portfólio.
+- `KEY_TEST`: chave SSH privada do usuário `ubuntu`.
 
-No servidor, o workflow mantém dois containers separados: `portifolio` para a API e `portfolio-postgres` para o banco. Os dados permanecem no volume `portfolio-postgres-data` entre os deploys.
+No servidor, o workflow mantém dois containers separados: `portifolio` para a API e `portfolio-postgres` para o banco. Os dados permanecem no volume `portfolio-postgres-data` entre os deploys. O banco usa as credenciais locais `portfolio/portfolio` e não publica a porta `5432` fora da rede Docker.
 
 ## Endpoints
 
