@@ -46,12 +46,15 @@ jobs:
           POSTGRES_DB: portfolio
           POSTGRES_USER: portfolio
           POSTGRES_PASSWORD: portfolio
+          AUTH0_ISSUER: ${{ vars.AUTH0_ISSUER }}
+          AUTH0_AUDIENCE: ${{ vars.AUTH0_AUDIENCE }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
         with:
           host: ${{ secrets.HOST_TEST }}
           username: "ubuntu"
           key: ${{ secrets.KEY_TEST }}
           port: 22
-          envs: IMAGE_TAG,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD
+          envs: IMAGE_TAG,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,AUTH0_ISSUER,AUTH0_AUDIENCE,FRONTEND_URL
           script: |
             docker network inspect portfolio-network >/dev/null 2>&1 || docker network create portfolio-network
             docker volume inspect portfolio-postgres-data >/dev/null 2>&1 || docker volume create portfolio-postgres-data
@@ -91,4 +94,7 @@ jobs:
               -e DATABASE_URL="jdbc:postgresql://portfolio-postgres:5432/$POSTGRES_DB" \
               -e DATABASE_USERNAME="$POSTGRES_USER" \
               -e DATABASE_PASSWORD="$POSTGRES_PASSWORD" \
+              -e AUTH0_ISSUER="$AUTH0_ISSUER" \
+              -e AUTH0_AUDIENCE="$AUTH0_AUDIENCE" \
+              -e FRONTEND_URL="$FRONTEND_URL" \
               "$IMAGE_TAG"
