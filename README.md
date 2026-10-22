@@ -37,7 +37,7 @@ Configure as seguintes variáveis:
 
 ```env
 AUTH0_ISSUER=https://SEU_DOMINIO_AUTH0/
-AUTH0_AUDIENCE=https://api.acessor-investimentos
+AUTH0_AUDIENCE=https://api.crescit-investimentos
 FRONTEND_URL=http://localhost:5173
 ```
 
