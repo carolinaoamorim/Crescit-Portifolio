@@ -38,8 +38,10 @@ Configure as seguintes variáveis:
 ```env
 AUTH0_ISSUER=https://SEU_DOMINIO_AUTH0/
 AUTH0_AUDIENCE=https://api.crescit-investimentos
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=https://crescit-frontend.vercel.app
 ```
+
+Para desenvolvimento local, use `FRONTEND_URL=http://localhost:5173`.
 
 O serviço valida assinatura, expiração, issuer e audience do token. Requisições sem token ou com token inválido retornam `401`; tokens válidos sem permissão ou de outro usuário retornam `403`.
 

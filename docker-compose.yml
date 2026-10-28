@@ -24,7 +24,7 @@ services:
       SERVER_PORT: 8080
       AUTH0_ISSUER: ${AUTH0_ISSUER}
       AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      FRONTEND_URL: ${FRONTEND_URL:-https://crescit-frontend.vercel.app}
     ports:
       - "${SERVER_PORT:-8080}:8080"
     depends_on:

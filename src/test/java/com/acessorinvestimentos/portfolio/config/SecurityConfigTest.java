@@ -58,12 +58,12 @@ class SecurityConfigTest {
         assertThat(securityConfig.jwtDecoder("https://tenant.auth0.com/", "portfolio-api")).isNotNull();
         assertThat(securityConfig.jwtDecoder("https://tenant.auth0.com", "portfolio-api")).isNotNull();
 
-        CorsConfigurationSource source = securityConfig.corsConfigurationSource("http://localhost:5173");
+        CorsConfigurationSource source = securityConfig.corsConfigurationSource("https://crescit-frontend.vercel.app");
         HttpServletRequest request = new MockHttpServletRequest("GET", "/portfolios/auth0|user");
         CorsConfiguration configuration = source.getCorsConfiguration(request);
 
         assertThat(configuration).isNotNull();
-        assertThat(configuration.getAllowedOrigins()).containsExactly("http://localhost:5173");
+        assertThat(configuration.getAllowedOrigins()).containsExactly("https://crescit-frontend.vercel.app");
         assertThat(configuration.getAllowedMethods()).contains("GET", "POST", "PUT", "DELETE", "OPTIONS");
         assertThat(configuration.getAllowedHeaders()).contains("Authorization", "Content-Type");
     }
