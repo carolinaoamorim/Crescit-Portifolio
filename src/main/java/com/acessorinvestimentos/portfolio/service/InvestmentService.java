@@ -37,7 +37,9 @@ public class InvestmentService {
         if (investmentRepository.existsByPortfolioIdAndTickerIgnoreCase(portfolio.getId(), request.ticker())) {
             throw new DuplicateResourceException("Investment with ticker " + request.ticker().toUpperCase() + " already exists");
         }
-        Investment saved = investmentRepository.save(new Investment(portfolio.getId(), request.ticker(), request.assetName(), request.assetType()));
+        Investment investment = new Investment(portfolio.getId(), request.ticker(), request.assetName(), request.assetType());
+        investment.updateExtraDetails(request.institution(), request.rateType(), request.rateValue(), request.maturityDate());
+        Investment saved = investmentRepository.save(investment);
         portfolio.touch();
         portfolioRepository.save(portfolio);
         return saved;
@@ -65,6 +67,7 @@ public class InvestmentService {
             throw new DuplicateResourceException("Investment with ticker " + request.ticker().toUpperCase() + " already exists");
         }
         investment.updateDetails(request.ticker(), request.assetName(), request.assetType());
+        investment.updateExtraDetails(request.institution(), request.rateType(), request.rateValue(), request.maturityDate());
         portfolio.touch();
         return investmentRepository.save(investment);
     }

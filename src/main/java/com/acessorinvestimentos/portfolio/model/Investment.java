@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -40,6 +41,19 @@ public class Investment {
 
     @Column(name = "average_price", nullable = false, precision = 19, scale = 8)
     private BigDecimal averagePrice;
+
+    @Column(length = 60)
+    private String institution;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rate_type", length = 20)
+    private RateType rateType;
+
+    @Column(name = "rate_value", precision = 9, scale = 4)
+    private BigDecimal rateValue;
+
+    @Column(name = "maturity_date")
+    private LocalDate maturityDate;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -74,6 +88,10 @@ public class Investment {
     public BigDecimal getTotalQuantity() { return totalQuantity; }
     public BigDecimal getTotalInvested() { return totalInvested; }
     public BigDecimal getAveragePrice() { return averagePrice; }
+    public String getInstitution() { return institution; }
+    public RateType getRateType() { return rateType; }
+    public BigDecimal getRateValue() { return rateValue; }
+    public LocalDate getMaturityDate() { return maturityDate; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -81,6 +99,16 @@ public class Investment {
         this.ticker = ticker.trim().toUpperCase();
         this.assetName = assetName.trim();
         this.assetType = assetType;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /** Instituição e rentabilidade são opcionais; taxa e tipo de taxa só valem juntos. */
+    public void updateExtraDetails(String institution, RateType rateType, BigDecimal rateValue, LocalDate maturityDate) {
+        this.institution = institution == null || institution.isBlank() ? null : institution.trim();
+        boolean hasRate = rateType != null && rateValue != null;
+        this.rateType = hasRate ? rateType : null;
+        this.rateValue = hasRate ? rateValue : null;
+        this.maturityDate = maturityDate;
         this.updatedAt = LocalDateTime.now();
     }
 

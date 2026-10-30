@@ -84,6 +84,38 @@ class PortfolioControllerIntegrationTest {
     }
 
     @Test
+    void shouldStoreInstitutionAndFixedIncomeRate() throws Exception {
+        String userId = "auth0|details-user";
+        String cdbJson = """
+                {"ticker":"CDB-BTG-110CDI","assetName":"CDB BTG 110% do CDI","assetType":"FIXED_INCOME",
+                 "institution":"BTG Pactual","rateType":"CDI_PERCENT","rateValue":110,"maturityDate":"2028-07-01"}
+                """;
+        mockMvc.perform(post("/portfolios/{userId}/investments", userId)
+                        .with(authenticatedAs(userId, "write:portfolio"))
+                        .contentType(MediaType.APPLICATION_JSON).content(cdbJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.institution").value("BTG Pactual"))
+                .andExpect(jsonPath("$.rateType").value("CDI_PERCENT"))
+                .andExpect(jsonPath("$.rateValue").value(110))
+                .andExpect(jsonPath("$.maturityDate").value("2028-07-01"));
+
+        mockMvc.perform(post("/portfolios/{userId}/investments", userId)
+                        .with(authenticatedAs(userId, "write:portfolio"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ticker\":\"FUNDO-XP\",\"assetName\":\"XP Multimercado\",\"assetType\":\"FUND\",\"institution\":\"Itaú\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.assetType").value("FUND"))
+                .andExpect(jsonPath("$.rateType").doesNotExist());
+
+        mockMvc.perform(post("/portfolios/{userId}/investments", userId)
+                        .with(authenticatedAs(userId, "write:portfolio"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ticker\":\"CDB-X\",\"assetName\":\"CDB\",\"assetType\":\"FIXED_INCOME\",\"rateType\":\"PREFIXED\",\"rateValue\":-1}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.rateValue").exists());
+    }
+
+    @Test
     void shouldValidateRequestAndRejectDuplicateTicker() throws Exception {
         String userId = "auth0|validation-user";
         String investmentJson = """

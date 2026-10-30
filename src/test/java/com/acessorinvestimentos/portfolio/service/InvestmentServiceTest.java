@@ -57,6 +57,22 @@ class InvestmentServiceTest {
     }
 
     @Test
+    void shouldStoreInstitutionAndIgnoreRateWithoutType() {
+        when(portfolioService.getOrCreatePortfolio("auth0|123")).thenReturn(portfolio);
+        when(investmentRepository.save(org.mockito.ArgumentMatchers.any(Investment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        InvestmentRequest cdb = new InvestmentRequest("CDB-ITAU", "CDB Itaú", AssetType.FIXED_INCOME,
+                "  Itaú ", null, new java.math.BigDecimal("12.5"), java.time.LocalDate.of(2027, 1, 15));
+
+        Investment result = investmentService.addInvestment("auth0|123", cdb);
+
+        assertEquals("Itaú", result.getInstitution());
+        assertEquals(null, result.getRateType());
+        assertEquals(null, result.getRateValue());
+        assertEquals(java.time.LocalDate.of(2027, 1, 15), result.getMaturityDate());
+    }
+
+    @Test
     void shouldRejectDuplicateTicker() {
         when(portfolioService.getOrCreatePortfolio("auth0|123")).thenReturn(portfolio);
         when(investmentRepository.existsByPortfolioIdAndTickerIgnoreCase(portfolio.getId(), "petr4")).thenReturn(true);
